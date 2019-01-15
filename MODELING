@@ -1,6 +1,8 @@
 #IMPORTAMOS LAS COVARIABLES AMBIENTALES
 library(raster)
-covs <- stack('')
+covs <- stack("covs5km.tif")
+names(covs) <- readRDS('worldgridsCOVS_names.rds')
+
 
 
 
