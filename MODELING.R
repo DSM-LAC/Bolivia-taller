@@ -2,47 +2,53 @@
 library(raster)
 covs <- stack("covs5km.tif")
 names(covs) <- readRDS('worldgridsCOVS_names.rds')
-
-
 #EXTRAEMOS A LOS DATOS DE LAS COVARIABLES A LOS PUNTOS 
 e <- extract(covs, training[c('x','y')])
 training <- cbind(training, data.frame(e))
-
+#QUITAMOS VALORES POR ENCIMA DE 65% DE ARENA
+training$ARENA[training$ARENA>65] <- 65
+#QUITAMOS LOS CEROS
+training$ARENA[training$ARENA==0] <- NA
+training <- na.omit(training)
+#QUITAMOS LAS VARIABLES CATEGORICAS
 cat1 <- grep('igb', names(training))[1:6]
 		cat2 <- grep('esa', names(training))[23]		
 		cat <- c(cat1, cat2)
-
-		t <- na.omit(training[-cat])
-
+t <- na.omit(training[-cat])
+#ENCONTRAMOS LAS VARIABLES MEJOR CORRELACIONADAS CON LA ARENA
 COR <- cor(as.matrix(t[,3]), as.matrix(t[-c(1, 2, 3)]))
-
-	library(reshape)
- 
- x <- subset(melt(COR), value != 1 | value != NA)
- x <- x[with(x, order(-abs(x$value))),]
-
+library(reshape)
+x <- subset(melt(COR), value != 1 | value != NA)
+x <- x[with(x, order(-abs(x$value))),]
 		names(x)[1] <- 'country'
 		names(x)[2] <- 'predictor'
 		names(x)[3] <- 'correlation'
-		
 bestCor <- data.frame(country = character(), predictor = character(), 
 correlation = numeric())
 bestCor$country <- as.character(bestCor$country)
 bestCor$predictor <- as.character(bestCor$predictor)
-
-
-		bestCor <- rbind (bestCor, x[1:10,])			
-	
-		idx <- as.character(x$predictor[1:10])
-		
-
+bestCor <- rbind (bestCor, x[1:10,])			
+idx <- as.character(x$predictor[1:10])	
+print(bestCor)
+#NOS QUEDAMOS SOLAMENTE CON LAS VARIABLES MEJOR CORRELACIONADAS
 train <- training[idx]
 train$ARENA <- training$ARENA
-
 train <- na.omit(train)
 COVS <- covs[[idx]]
-
+#ENTRENAMOS UN MODELO LINEAL
+model.MLR <- lm(log(ARENA) ~ ., data = train)
+predLM <- predict(COVS, model.MLR)
+#ENTRENAMOS UN MODELO NO LINEAL
 arbolReg <- randomForest(ARENA~., train)
+predRF <- predict(COVS, arbolReg)
+#VISUALIZAMOS PREDICCIONES
+library(rasterVis)
+plot(exp(mapLM))
+plot(predRF)
+#
+#####
+#####HASTA AQUI
+
 
 
 set.seed(102)
