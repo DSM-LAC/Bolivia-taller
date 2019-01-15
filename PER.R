@@ -10,10 +10,46 @@ dat <- na.omit(dat)
 #GENERA ID COLUMN
 dat$IDPROF <- paste0("IDPROF_", dat$longitude, "_", dat$latitud)
 
+dat <- dat[!dat$CODIGO=='Lo44',]
+
+dat <- dat[!is.na(dat$bottom),]
+
+# Y dos perfiles tienen los valores erroneos porque tenian 80-60
+dat[dat$bottom <= dat$top,]
+
+# los quitamos
+dat <- dat[!dat$bottom <= dat$top,]
+
+library(aqp)
+
+depths(dat) <- IDPROF ~ top + bottom
+
+# diferenciamos atributos de perfil de atributos de horizontes
+site(dat) <- ~ longitude + latitud 
+
+# Especificamos las coordenadas espaciales
+coordinates(dat) <- ~ longitude + latitud 
+dat@sp@proj4string <- CRS("+init=epsg:4326")
+
+plot(dat@sp)
+
+
+library(GSIF)
+
+try(SOC <- mpspline(dat, 'SOC', d = t(c(0,30))))
+
+training <- data.frame(
+                  x = dat@sp@coords[,1],
+                  y = dat@sp@coords[,2],
+                  SOC = SOC$var.std[,1])
+
 #SELECCIONA SOLAMENTE LOS DATOS SUPERFICIALES
-dat0 <- dat[dat$top==0,]
-training <- dat0[c(2,3,6)]
-str(dat0)
+#dat0 <- dat[dat$top==0,]
+#training <- dat0[c(2,3,6)]
+#str(dat0)
+
+####
+####HASTA AQUI
 
 #IMPORTAMOS LAS COVARIABLES AMBIENTALES
 library(raster)
@@ -26,8 +62,8 @@ training <- cbind(training, data.frame(e))
 
 training <- na.omit(training)
 #QUITAMOS LAS VARIABLES CATEGORICAS
-cat1 <- grep('igb', names(training))[1:6]
-		cat2 <- grep('esa', names(training))[23]		
+cat1 <- grep('igb', names(training))
+		cat2 <- grep('esa', names(training))		
 		cat <- c(cat1, cat2)
 t <- na.omit(training[-cat])
 
