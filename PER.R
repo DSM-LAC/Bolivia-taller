@@ -9,9 +9,9 @@ dat <- read.csv("alldata_Peru.csv")
 dat <- na.omit(dat)
 #GENERA ID COLUMN
 dat$IDPROF <- paste0("IDPROF_", dat$longitude, "_", dat$latitud)
-
+#ELIMINO EL PERFIL Lo44 
 dat <- dat[!dat$CODIGO=='Lo44',]
-
+#
 dat <- dat[!is.na(dat$bottom),]
 
 # Y dos perfiles tienen los valores erroneos porque tenian 80-60
