@@ -17,9 +17,10 @@ training$ARENA[training$ARENA>65] <- 65
 training$ARENA[training$ARENA==0] <- NA
 training <- na.omit(training)
 
-
-
-
+#PREPARAMOS COVARIABLES
+x <- as(covs,'SpatialPixelsDataFrame')
+x@data[] <- lapply(x@data, NA2mean)
+covs <- raster::stack(covs)
 
 
 
