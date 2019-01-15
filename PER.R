@@ -18,6 +18,7 @@ str(dat0)
 #IMPORTAMOS LAS COVARIABLES AMBIENTALES
 library(raster)
 covs <- stack("PER_worldgridsCOVS.tif")
+covs <- aggregate(covs, 5, mean)
 names(covs) <- readRDS('worldgridsCOVS_names.rds')
 #EXTRAEMOS A LOS DATOS DE LAS COVARIABLES A LOS PUNTOS 
 e <- extract(covs, training[c('longitude','latitud')])
