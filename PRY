@@ -1,4 +1,7 @@
 
+
+setwd("~/Downloads/NoSilverBulletOnDSM-2.0/Paraguay")
+
 library(rgdal)
 library(raster)
 #CARGA LOS DATOS
@@ -23,3 +26,19 @@ depths(dat) <- IDPROF ~ top + botton
 plot(dat[1:50], color='X..SOC')
 #DEFINE SITIO Y FALLA
 site(dat) <- ~ longitude + latitude
+# Especificamos las coordenadas espaciales
+coordinates(dat) <- ~ longitude + latitude
+dat@sp@proj4string <- CRS("+init=epsg:4326")
+
+plot(dat@sp)
+library(GSIF)
+
+try(SOC <- mpspline(dat, 'X..SOC', d = t(c(0,30))))
+
+training <- data.frame(
+                  x = dat@sp@coords[,1],
+                  y = dat@sp@coords[,2],
+                  SOC = SOC$var.std[,1])
+
+
+
