@@ -1,0 +1,6 @@
+#IMPORTAMOS LAS COVARIABLES AMBIENTALES
+library(raster)
+covs <- stack('')
+
+
+
