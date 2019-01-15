@@ -2,6 +2,9 @@
 library(raster)
 covs <- stack("covs5km.tif")
 names(covs) <- readRDS('worldgridsCOVS_names.rds')
+#EXTRAEMOS A LOS DATOS DE LAS COVARIABLES A LOS PUNTOS 
+e <- extract(covs, training[c('x','y')])
+
 
 
 
