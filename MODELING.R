@@ -3,12 +3,54 @@ library(raster)
 covs <- stack("covs5km.tif")
 names(covs) <- readRDS('worldgridsCOVS_names.rds')
 
+
+#EXTRAEMOS A LOS DATOS DE LAS COVARIABLES A LOS PUNTOS 
+e <- extract(covs, training[c('x','y')])
+training <- cbind(training, data.frame(e))
+
+cat1 <- grep('igb', names(training))[1:6]
+		cat2 <- grep('esa', names(training))[23]		
+		cat <- c(cat1, cat2)
+
+		t <- na.omit(training[-cat])
+
+COR <- cor(as.matrix(t[,3]), as.matrix(t[-c(1, 2, 3)]))
+
+	library(reshape)
+ 
+ x <- subset(melt(COR), value != 1 | value != NA)
+ x <- x[with(x, order(-abs(x$value))),]
+
+		names(x)[1] <- 'country'
+		names(x)[2] <- 'predictor'
+		names(x)[3] <- 'correlation'
+		
+bestCor <- data.frame(country = character(), predictor = character(), 
+correlation = numeric())
+bestCor$country <- as.character(bestCor$country)
+bestCor$predictor <- as.character(bestCor$predictor)
+
+
+		bestCor <- rbind (bestCor, x[1:10,])			
+	
+		idx <- as.character(x$predictor[1:10])
+		
+
+train <- training[idx]
+train$ARENA <- training$ARENA
+
+train <- na.omit(train)
+COVS <- covs[[idx]]
+
+arbolReg <- randomForest(ARENA~., train)
+
+
 set.seed(102)
 ctrl <- trainControl(savePred=T, method="repeatedcv", number=5, repeats=5)
 
 cl <- makeCluster(detectCores(), type='SOCK')
 registerDoParallel(cl)
-models <- caretList(training[-c(1, 2, 3)], training[,3], trControl=ctrl ,
+models <- caretList(training[-11], training[,11], trControl=ctrl ,
 methodList=c("rf", "svmLinear"))
 ens <- caretEnsemble(models)
 stopCluster(cl = cl)
@@ -28,10 +70,11 @@ stopCluster(cl = cl)
 
 
 
-covs[[is.na(covs)==TRUE]] <- -99999
-#EXTRAEMOS A LOS DATOS DE LAS COVARIABLES A LOS PUNTOS 
-e <- extract(covs, training[c('x','y')])
-training <- cbind(training, data.frame(e))
+
+
+
+
+
 #QUITAMOS VARIABLES CON MUCHOS HUECOS
  training$ln2dms3a <- NULL          
  training$lnmdms3a <- NULL
