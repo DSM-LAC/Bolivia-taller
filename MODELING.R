@@ -2,6 +2,33 @@
 library(raster)
 covs <- stack("covs5km.tif")
 names(covs) <- readRDS('worldgridsCOVS_names.rds')
+
+set.seed(102)
+ctrl <- trainControl(savePred=T, method="repeatedcv", number=5, repeats=5)
+
+cl <- makeCluster(detectCores(), type='SOCK')
+registerDoParallel(cl)
+models <- caretList(training[-c(1, 2, 3)], training[,3], trControl=ctrl ,
+methodList=c("rf", "svmLinear"))
+ens <- caretEnsemble(models)
+stopCluster(cl = cl)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+covs[[is.na(covs)==TRUE]] <- -99999
 #EXTRAEMOS A LOS DATOS DE LAS COVARIABLES A LOS PUNTOS 
 e <- extract(covs, training[c('x','y')])
 training <- cbind(training, data.frame(e))
@@ -22,7 +49,7 @@ x <- as(covs,'SpatialPixelsDataFrame')
 x@data[] <- lapply(x@data, NA2mean)
 covs <- raster::stack(covs)
 
-#AUTOCORRELACION ESPACIAL
+#
 dat <- training
 coordinates(dat) <- ~ x + y
 class(dat)
@@ -36,6 +63,8 @@ datdf <- datdf[, c("ARENA", names(covs))]
 # Fit a multiple linear regression model between the log transformed
 # values of ARENA and the top 20 covariates
 model.MLR <- lm(log(ARENA) ~ ., data = datdf)
+mapLM <- predict(model.MLR, covs)
+
 # stepwise variable selection
 model.MLR.step <- step(model.MLR, direction="both")
 # summary and anova of the new model using stepwise covariates
