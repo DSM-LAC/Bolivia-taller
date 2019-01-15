@@ -45,7 +45,8 @@ predRF <- predict(COVS, arbolReg)
 library(rasterVis)
 plot(exp(mapLM))
 plot(predRF)
-#
+#GUARDA LOS MAPAS EN TIF
+writeRaster(predRF, file='prediccionArbolRegARENA.tif')
 #####
 #####HASTA AQUI
 
