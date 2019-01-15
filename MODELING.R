@@ -38,7 +38,7 @@ COVS <- covs[[idx]]
 #ENTRENAMOS UN MODELO LINEAL
 model.MLR <- lm(log(ARENA) ~ ., data = train)
 predLM <- predict(COVS, model.MLR)
-#ENTRENAMOS UN MODELO NO LINEAL
+#ENTRENAMOS UN MODELO NO LINEAL (Random Forests)
 arbolReg <- randomForest(ARENA~., train)
 predRF <- predict(COVS, arbolReg)
 #VISUALIZAMOS PREDICCIONES
@@ -47,9 +47,16 @@ plot(exp(mapLM))
 plot(predRF)
 #GUARDA LOS MAPAS EN TIF
 writeRaster(predRF, file='prediccionArbolRegARENA.tif')
+writeRaster(exp(mapLM) , file='prediccionLinearModelARENA.tif')
 #####
 #####HASTA AQUI
-
+#
+#TRANSFORMA LOS DATOS PARA REGRESSION KRIGING
+# Project point data
+dat <- spTransform(dat, CRS("+init=epsg:6204"))
+# Project covariates to VN-2000 UTM 48N
+COVS <- projectRaster(COVS, crs = CRS("+init=epsg:6204"),
+method='ngb')
 
 
 set.seed(102)
