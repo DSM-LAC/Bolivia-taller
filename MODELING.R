@@ -39,18 +39,47 @@ COVS <- covs[[idx]]
 model.MLR <- lm(log(ARENA) ~ ., data = train)
 predLM <- predict(COVS, model.MLR)
 #ENTRENAMOS UN MODELO NO LINEAL (Random Forests)
+library(randomForest)
 arbolReg <- randomForest(ARENA~., train)
 predRF <- predict(COVS, arbolReg)
 #VISUALIZAMOS PREDICCIONES
 library(rasterVis)
-plot(exp(mapLM))
+plot(exp(predLM))
 plot(predRF)
 #GUARDA LOS MAPAS EN TIF
 writeRaster(predRF, file='prediccionArbolRegARENA.tif')
 writeRaster(exp(mapLM) , file='prediccionLinearModelARENA.tif')
 #####
 #####HASTA AQUI
-#
+library(caret)
+##DEFINE LOS CONTROLES DE VALIDACION CRUZADA DEL MODELO
+fitControl <- trainControl(## 10-fold CV
+                           method = "repeatedcv",
+                           number = 5,
+			   savePredictions = TRUE,
+                           repeats = 5)
+#VALIDACION CRUZADA DE AJUSTE NO LINEAL
+set.seed(825)
+ajusteRandomForest <- train(ARENA ~ ., data = train, 
+                 method = "rf", 
+                 trControl = fitControl,
+                 verbose = FALSE)
+
+#VALIDACION CRUZADA DE MODELO LINEAL
+set.seed(825)
+ajusteModeliLineal <- train(ARENA ~ ., data = train, 
+                 method = "lm", 
+                 trControl = fitControl,
+                 verbose = FALSE)
+
+
+
+
+
+
+
+
+
 #TRANSFORMA LOS DATOS PARA REGRESSION KRIGING
 # Project point data
 dat <- spTransform(dat, CRS("+init=epsg:6204"))
