@@ -53,11 +53,11 @@ training <- data.frame(
 
 #IMPORTAMOS LAS COVARIABLES AMBIENTALES
 library(raster)
-covs <- stack("PER_worldgridsCOVS.tif")
-covs <- aggregate(covs, 5, mean)
+covs <- stack("PER_worldgridsCOVS_5km.tif")
+#covs <- aggregate(covs, 5, mean)
 names(covs) <- readRDS('worldgridsCOVS_names.rds')
 #EXTRAEMOS A LOS DATOS DE LAS COVARIABLES A LOS PUNTOS 
-e <- extract(covs, training[c('longitude','latitud')])
+e <- extract(covs, training[c('x','y')])
 training <- cbind(training, data.frame(e))
 
 training <- na.omit(training)
@@ -67,7 +67,8 @@ cat1 <- grep('igb', names(training))
 		cat <- c(cat1, cat2)
 t <- na.omit(training[-cat])
 
-#ENCONTRAMOS LAS VARIABLES MEJOR CORRELACIONADAS CON LA ARENA
+#ENCONTRAMOS LAS VARIABLES MEJOR CORRELACIONADAS CON SOC
+#SOC es la varianle 3, las coordenadas son 1 y 2
 COR <- cor(as.matrix(t[,3]), as.matrix(t[-c(1, 2, 3)]))
 library(reshape)
 x <- subset(melt(COR), value != 1 | value != NA)
@@ -84,22 +85,30 @@ idx <- as.character(x$predictor[1:10])
 print(bestCor)
 #NOS QUEDAMOS SOLAMENTE CON LAS VARIABLES MEJOR CORRELACIONADAS
 train <- training[idx]
-train$ARENA <- training$ARENA
+#INCLUIMOS SOC A train
+train$SOC <- training$SOC
 train <- na.omit(train)
 COVS <- covs[[idx]]
+#QUITAMOS CEROS EN CARBONO
+train[train$SOC==0,] <- NA
+train <- na.omit(train)
+#QUITAMOS VALORES EXTREMOS DE CARBONO
+train[train$SOC==60,] <- 60
 #ENTRENAMOS UN MODELO LINEAL
-model.MLR <- lm(log(ARENA) ~ ., data = train)
+model.MLR <- lm(log1p(SOC) ~ ., data = train)
 predLM <- predict(COVS, model.MLR)
 #ENTRENAMOS UN MODELO NO LINEAL (Random Forests)
-arbolReg <- randomForest(ARENA~., train)
+library(randomForest)
+arbolReg <- randomForest(log1p(SOC)~., train)
 predRF <- predict(COVS, arbolReg)
 #VISUALIZAMOS PREDICCIONES
 library(rasterVis)
-plot(exp(mapLM))
-plot(predRF)
+levelplot(predLM)
+x11()
+levelplot(predRF)
 #GUARDA LOS MAPAS EN TIF
-writeRaster(predRF, file='prediccionArbolRegARENA.tif')
-writeRaster(exp(mapLM) , file='prediccionLinearModelARENA.tif')
+writeRaster(predRF, file='prediccionArbolRegSOClog1p.tif')
+writeRaster(predLM, file='prediccionLinearModelSOClog1p.tif')
 #####
 #####HASTA AQUI
 
