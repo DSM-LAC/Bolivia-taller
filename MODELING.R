@@ -105,8 +105,34 @@ PREDLM <- predict(COVS, ajusteModeloLineal)
 PREDRF  <- predict(COVS, ajusteRandomForest)
 #ENSAMBLE DE MODELOS
 ENSAMBLE  <- predict(COVS, ens)
+#STACK PREDICTIONS 
+models <- stack(PREDLM, PREDRF, ENSAMBLE)
+#CONVERT TO DATA FRAME
+DF <- na.omit(as.data.frame(models))
+names(DF) <- c('Linear', 'RandomForests', 'Ensamble')	      
+#CORRELACION ENTRE PREDICCIONES
+library(psych)
+pairs.panels(DF,
+method = "pearson", # correlation method
+hist.col = "#00AFBB",
+density = TRUE, # show density plots
+ellipses = TRUE) # show correlation ellipses
+#VARIANZA ENTRE PREDICCIONES
+library(rasterVis)
+names(models) <- c('Linear', 'RandomForests', 'Ensamble')	 
+densityplot(models)
+SD <- calc(models , sd)
+library(plotKML)
+plotKML(SD)
+####
+####hasta aqui!
 
-predictions <- stack(PREDLM. PREDRF, ENSAMBLE)
+
+
+
+
+
+
 
 #TRANSFORMA LOS DATOS PARA REGRESSION KRIGING
 # Project point data
