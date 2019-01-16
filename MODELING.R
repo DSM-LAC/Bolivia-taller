@@ -90,11 +90,11 @@ library(doParallel)
 library(doMC)
 set.seed(102)
 
-ctrl <- trainControl(savePred=T, method="repeatedcv", number=5, repeats=5)
+ctrl <- trainControl(method="repeatedcv", number=5, repeats=5, savePredictions = TRUE)
 cl <- makeCluster(detectCores(), type='SOCK')
 registerDoParallel(cl)
 models <- caretList(train[-11], train[,11], trControl=ctrl ,
-methodList=c("rf", "rlm"))
+methodList=c("rf", "lm"))
 ens <- caretEnsemble(models)
 stopCluster(cl = cl)
 
@@ -106,6 +106,7 @@ PREDRF  <- predict(COVS, ajusteRandomForest)
 #ENSAMBLE DE MODELOS
 ENSAMBLE  <- predict(COVS, ens)
 
+predictions <- stack(PREDLM. PREDRF, ENSAMBLE)
 
 #TRANSFORMA LOS DATOS PARA REGRESSION KRIGING
 # Project point data
