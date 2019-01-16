@@ -60,23 +60,31 @@ fitControl <- trainControl(## 10-fold CV
                            repeats = 5)
 #VALIDACION CRUZADA DE AJUSTE NO LINEAL
 set.seed(825)
-ajusteRandomForest <- train(ARENA ~ ., data = train, 
+(ajusteRandomForest <- train(ARENA ~ ., data = train, 
                  method = "rf", 
                  trControl = fitControl,
-                 verbose = FALSE)
+                 verbose = FALSE))
 
 #VALIDACION CRUZADA DE MODELO LINEAL
 set.seed(825)
-ajusteModeliLineal <- train(ARENA ~ ., data = train, 
+(ajusteModeliLineal <- train(ARENA ~ ., data = train, 
                  method = "lm", 
                  trControl = fitControl,
-                 verbose = FALSE)
+                 verbose = FALSE))
+#EXTRAE OBSERVADOS Y MODELADOS PARA AMBOS AJUSTES
+RFpred <- ajusteRandomForest$pred$pred
+obsRF <- ajusteRandomForest$pred$obs
+LMpred <- ajusteModeliLineal$pred$pred
+obsLM <- ajusteModeliLineal$pred$obs
+validacionLM <- data.frame(obs=obsLM, mod=LMpred, model='Linear')
+validacionRF <- data.frame(obs=obsRF, mod=RFpred, model='RF')
+validacion <- rbind(validacionLM, validacionRF)
 
-
-
-
-
-
+#GRAFICA LA RELACION ENTRE OBSERVADOvalidacionRFS Y MODELADOS
+library(openair)
+conditionalQuantile(validacion, obs = "obs", mod = "mod", type='model')
+###
+###HASTA AQUI
 
 
 
