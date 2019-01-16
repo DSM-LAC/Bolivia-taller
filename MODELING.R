@@ -94,7 +94,7 @@ ctrl <- trainControl(method="repeatedcv", number=5, repeats=5, savePredictions =
 cl <- makeCluster(detectCores(), type='SOCK')
 registerDoParallel(cl)
 models <- caretList(train[-11], train[,11], trControl=ctrl ,
-methodList=c("rf", "lm"))
+methodList=c("rf", "lm", "kknn", "pls"))
 ens <- caretEnsemble(models)
 stopCluster(cl = cl)
 
