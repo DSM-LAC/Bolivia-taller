@@ -67,15 +67,15 @@ set.seed(825)
 
 #VALIDACION CRUZADA DE MODELO LINEAL
 set.seed(825)
-(ajusteModeliLineal <- train(ARENA ~ ., data = train, 
+(ajusteModeloLineal <- train(ARENA ~ ., data = train, 
                  method = "lm", 
                  trControl = fitControl,
                  verbose = FALSE))
 #EXTRAE OBSERVADOS Y MODELADOS PARA AMBOS AJUSTES
 RFpred <- ajusteRandomForest$pred$pred
 obsRF <- ajusteRandomForest$pred$obs
-LMpred <- ajusteModeliLineal$pred$pred
-obsLM <- ajusteModeliLineal$pred$obs
+LMpred <- ajusteModeloLineal$pred$pred
+obsLM <- ajusteModeloLineal$pred$obs
 validacionLM <- data.frame(obs=obsLM, mod=LMpred, model='Linear')
 validacionRF <- data.frame(obs=obsRF, mod=RFpred, model='RF')
 validacion <- rbind(validacionLM, validacionRF)
@@ -84,8 +84,27 @@ validacion <- rbind(validacionLM, validacionRF)
 library(openair)
 conditionalQuantile(validacion, obs = "obs", mod = "mod", type='model')
 ###
-###HASTA AQUI
+###ENSAMBLE DE AMBOS
+library(caretEnsemble)
+library(doParallel)
+library(doMC)
+set.seed(102)
 
+ctrl <- trainControl(savePred=T, method="repeatedcv", number=5, repeats=5)
+cl <- makeCluster(detectCores(), type='SOCK')
+registerDoParallel(cl)
+models <- caretList(train[-11], train[,11], trControl=ctrl ,
+methodList=c("rf", "rlm"))
+ens <- caretEnsemble(models)
+stopCluster(cl = cl)
+
+###PREDICCIONES
+#AJUSTE LINEAL
+PREDLM <- predict(COVS, ajusteModeloLineal)
+#AJUSTE NO LINEAL
+PREDRF  <- predict(COVS, ajusteRandomForest)
+#ENSAMBLE DE MODELOS
+ENSAMBLE  <- predict(COVS, ens)
 
 
 #TRANSFORMA LOS DATOS PARA REGRESSION KRIGING
