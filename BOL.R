@@ -136,17 +136,68 @@ dat@sp@proj4string <- CRS("+init=epsg:4326")
 
 plot(dat@sp)
 
-####HASTA AQUI
+####
 ########### Splines #####################3
 #arena
 library(GSIF)
 
 try(ARENA <- mpspline(dat, 'ARENA', d = t(c(0,30))))
 
-training <- data.frame(
+ARENA <- data.frame(
                   x = dat@sp@coords[,1],
                   y = dat@sp@coords[,2],
                   ARENA = ARENA$var.std[,1])
+
+try(LIMO <- mpspline(dat, 'LIMO', d = t(c(0,30))))
+
+LIMO <- data.frame(
+                  x = dat@sp@coords[,1],
+                  y = dat@sp@coords[,2],
+                  LIMO = LIMO$var.std[,1])
+
+try(ARCILLA <- mpspline(dat, 'ARCILLA', d = t(c(0,30))))
+
+ARCILLA <- data.frame(
+                  x = dat@sp@coords[,1],
+                  y = dat@sp@coords[,2],
+                  ARCILLA = ARCILLA$var.std[,1])
+
+
+try(X.MO <- mpspline(dat, 'X.MO', d = t(c(0,30))))
+
+X.MO <- data.frame(
+                  x = dat@sp@coords[,1],
+                  y = dat@sp@coords[,2],
+                  X.MO = X.MO$var.std[,1])
+
+try(PHAGUA <- mpspline(dat, 'PHAGUA', d = t(c(0,30))))
+
+PHAGUA <- data.frame(
+                  x = dat@sp@coords[,1],
+                  y = dat@sp@coords[,2],
+                  PHAGUA = PHAGUA$var.std[,1])
+
+
+try(CE <- mpspline(dat, 'CE', d = t(c(0,30))))
+
+
+CE <- data.frame(
+                  x = dat@sp@coords[,1],
+                  y = dat@sp@coords[,2],
+                  CE = CE$var.std[,1])
+
+try(CICE <- mpspline(dat, 'CICE', d = t(c(0,30))))
+
+
+CICE <- data.frame(
+                  x = dat@sp@coords[,1],
+                  y = dat@sp@coords[,2],
+                  CICE = CICE$var.std[,1])
+
+
+
+
+
 
 write.csv(training, file='arena30cm.csv')
 ###
