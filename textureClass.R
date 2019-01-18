@@ -38,8 +38,9 @@ SSCP@data <- cbind(SSCP@data,
  spplot(SSCP['TEXCLASS'])
 #CLAVES DE MAPA 
 ##Cl = arcilloso
-##Lo = limoso 
+##Lo = franco
 ##Sa = arenoso
+##Si = limoso
  
 #CONVIERTE A UN FORMATO RASTER
  text <- as.factor( raster(SSCP['TEXCLASS']))
