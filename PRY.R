@@ -33,7 +33,7 @@ dat@sp@proj4string <- CRS("+init=epsg:4326")
 plot(dat@sp)
 library(GSIF)
 
-try(SOC <- mpspline(dat, 'X..SOC', d = t(c(0,30))))
+try(SOC <- mpspline(dat, 'SOC', d = t(c(0,30))))
 
 training <- data.frame(
                   x = dat@sp@coords[,1],
