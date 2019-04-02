@@ -41,4 +41,6 @@ training <- data.frame(
                   SOC = SOC$var.std[,1])
 
 
+########ESCRIBE TU CODIGO AQUI
+
 
